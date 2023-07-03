@@ -36,20 +36,32 @@ class ChatOpenAI_ChatModels implements INode {
                         name: 'gpt-4'
                     },
                     {
-                        label: 'gpt-4-0314',
-                        name: 'gpt-4-0314'
+                        label: 'gpt-4-0613',
+                        name: 'gpt-4-0613'
                     },
                     {
-                        label: 'gpt-4-32k-0314',
-                        name: 'gpt-4-32k-0314'
+                        label: 'gpt-4-32k',
+                        name: 'gpt-4-32k'
+                    },
+                    {
+                        label: 'gpt-4-32k-0613',
+                        name: 'gpt-4-32k-0613'
                     },
                     {
                         label: 'gpt-3.5-turbo',
                         name: 'gpt-3.5-turbo'
                     },
                     {
-                        label: 'gpt-3.5-turbo-0301',
-                        name: 'gpt-3.5-turbo-0301'
+                        label: 'gpt-3.5-turbo-0613',
+                        name: 'gpt-3.5-turbo-0613'
+                    },
+                    {
+                        label: 'gpt-3.5-turbo-16k',
+                        name: 'gpt-3.5-turbo-16k'
+                    },
+                    {
+                        label: 'gpt-3.5-turbo-16k-0613',
+                        name: 'gpt-3.5-turbo-16k-0613'
                     }
                 ],
                 default: 'gpt-3.5-turbo',
@@ -120,7 +132,7 @@ class ChatOpenAI_ChatModels implements INode {
         const basePath = nodeData.inputs?.basepath as string
 
         const obj: Partial<OpenAIChatInput> & { openAIApiKey?: string } = {
-            temperature: parseInt(temperature, 10),
+            temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
             streaming: streaming ?? true

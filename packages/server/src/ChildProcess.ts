@@ -1,5 +1,10 @@
+import path from 'path'
 import { IChildProcessMessage, IReactFlowNode, IReactFlowObject, IRunChatflowMessageValue, INodeData } from './Interface'
-import { buildLangchain, constructGraphs, getEndingNode, getStartingNodes, resolveVariables } from './utils'
+import { buildLangchain, constructGraphs, getEndingNode, getStartingNodes, getUserHome, resolveVariables } from './utils'
+import { DataSource } from 'typeorm'
+import { ChatFlow } from './entity/ChatFlow'
+import { ChatMessage } from './entity/ChatMessage'
+import { Tool } from './entity/Tool'
 
 export class ChildProcess {
     /**
@@ -22,8 +27,10 @@ export class ChildProcess {
 
         await sendToParentProcess('start', '_')
 
+        const childAppDataSource = await initDB()
+
         // Create a Queue and add our initial node in it
-        const { endingNodeData, chatflow, incomingInput, componentNodes } = messageValue
+        const { endingNodeData, chatflow, chatId, incomingInput, componentNodes } = messageValue
 
         let nodeToExecuteData: INodeData
         let addToChatFlowPool: any = {}
@@ -83,6 +90,8 @@ export class ChildProcess {
                 depthQueue,
                 componentNodes,
                 incomingInput.question,
+                chatId,
+                childAppDataSource,
                 incomingInput?.overrideConfig
             )
 
@@ -112,6 +121,22 @@ export class ChildProcess {
 
         await sendToParentProcess('finish', { result, addToChatFlowPool })
     }
+}
+
+/**
+ * Initalize DB in child process
+ * @returns {DataSource}
+ */
+async function initDB() {
+    const homePath = process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise')
+    const childAppDataSource = new DataSource({
+        type: 'sqlite',
+        database: path.resolve(homePath, 'database.sqlite'),
+        synchronize: true,
+        entities: [ChatFlow, ChatMessage, Tool],
+        migrations: []
+    })
+    return await childAppDataSource.initialize()
 }
 
 /**
